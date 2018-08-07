@@ -1,7 +1,7 @@
 # TrackingLocation
 tracking location on Android/iOS platform
 
-- Insall Xcode
+- Install Xcode
 - Android Studio
 - React native Client
 
