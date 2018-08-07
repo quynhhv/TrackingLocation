@@ -5,11 +5,11 @@ tracking location on Android/iOS platform
 - Android Studio
 - React native Client
 
-cd /TrackingLocation
-yarn install
+# cd /TrackingLocation
+# yarn install
 
 
-Run iOS : react-native run-ios
-Run Android : react-native run-android
+# Run iOS : react-native run-ios
+# Run Android : react-native run-android
 
 
