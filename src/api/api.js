@@ -4,44 +4,23 @@ import ApiConfig from './config';
 let accessToken = null;
 let renewalToken = null;
 
-export const authApi =  {
-    setAccessToken: (access, renewal) => {
-        accessToken = access;
-        renewalToken = renewal;
-    },
-    authEmailOrUser : (params) => loginEmailOrUser(ApiConfig.methodPost, "/airmarket-dispatcher/auth", params)
-}
-
-const loginEmailOrUser = async (method, path, data) => {
-    console.log('loginEmailOrUser',method, path, data);
-    const response = await request({method, path, data});
-    console.log('response loginEmailOrUser' + response);
-    if (response && response.token) {
-        authApi.setAccessToken(response.token, "");
-    } else {
-        authApi.setAccessToken(null, null);
-    }
-    console.log("token",accessToken);
-    return response;
-}
-
 export const productApi = {
-    realtimeLocation : (data) => realtimeLocationToServer(ApiConfig.methodPost, "/api/locations/",data)
+    realtimeLocation : (data) => realtimeLocationToServer(ApiConfig.methodPost, "/api/locations",data),
+    offlineLocation : (data) => realtimeLocationOffline(ApiConfig.methodPost, "/api/locations",data)
 }
-// const newProductToServer = async (method, path, data) => {
-//     const response = await request({method, path, data});
-//     console.log('response newProduct' + response);
-//     return response;
-// }
-// const productByLocation = async (method, path, data) => {
 
-// }
+
+
 const realtimeLocationToServer = async (method, path, data) => {
     const response = await request({method, path, data});
     console.log('response realtime location' + response);
     return response;
 }
-
+const offlineLocation = async (method, path, data) => {
+    const response = await request({method, path, data});
+    console.log('response realtime location' + response);
+    return response;
+}
 
 const request = async (params = {}) => {
     const headers = accessToken

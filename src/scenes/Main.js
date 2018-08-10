@@ -52,13 +52,14 @@ class MainScene extends PureComponent {
       isRunning: false,
       error: null, 
       trackingId: null,
+      deviceId: null,
       isConnected: true
     };
 
     this.goToSettings = this.goToSettings.bind(this);
   }
   
-   handleConnectivityChange = (isConnected) => {
+  handleConnectivityChange = (isConnected) => {
      console.log("handleConnectivityChange", isConnected);
     this.setState({ isConnected });
   };
@@ -113,8 +114,13 @@ class MainScene extends PureComponent {
   }
 
   componentDidMount() {
-    NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectivityChange);
+    // kiem tra trong local da co chua -> neu chua co thi sinh cai deviceID 
+    // neu co device Id thi dung
+    // goi lay deviceID
+    // Search cach lay EMEI chi doi voi android -> neu ko lay dc thi phai tu sinh  guid() luu vao local
 
+    NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectivityChange);
+    this.toggleTracking();
     console.log('map did mount');
     if(this.trackingId === null){
       this.setState({ trackingId: guid()});
@@ -194,6 +200,9 @@ class MainScene extends PureComponent {
       Alert.alert('BackgroundGeolocation error', message);
     });
 
+
+    /// new location received 
+    /// call API
     BackgroundGeolocation.on('location', location => {
       console.log('[DEBUG] BackgroundGeolocation xxxxxxxxxx', location);
       BackgroundGeolocation.startTask(taskKey => {
@@ -211,8 +220,7 @@ class MainScene extends PureComponent {
         });
       });
       
-
-
+// COLLECT DATA => CALL API
       const locationSubmit = {time:"2018-10-10 10:10:10", lat: location.latitude.toString(), lng: location.longitude.toString()}
       const arrLocationSubmit = [locationSubmit];
       const now = moment().format('YYYY-MM-DD');;
@@ -361,7 +369,7 @@ class MainScene extends PureComponent {
         </Content>
         <Footer style={styles.footer}>
           <FooterTab>
-            <Button onPress={this.toggleTracking}>
+            <Button >
               <Icon name={isRunning ? 'pause' : 'play'} style={styles.icon} />
             </Button>
             <Button onPress={this.goToSettings}>
