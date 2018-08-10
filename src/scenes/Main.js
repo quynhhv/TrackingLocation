@@ -1,7 +1,7 @@
 'use strict';
 
 import React, { PureComponent } from 'react';
-import { StyleSheet, View, Alert, Dimensions, Platform, PermissionsAndroid } from 'react-native';
+import { StyleSheet, View, Alert, Dimensions, Platform, PermissionsAndroid, NetInfo } from 'react-native';
 
 import {
   Container,
@@ -19,6 +19,7 @@ import TrackingDot from '../res/TrackingDot.png';
 import { productApi } from '../api/api';
 import { guid } from '../helper/untils';
 import moment from 'moment';
+import OfflineNotice from '../Components/OfflineNotice';
 
 const styles = StyleSheet.create({
   container: {
@@ -50,12 +51,18 @@ class MainScene extends PureComponent {
       stationaries: [],
       isRunning: false,
       error: null, 
-      trackingId: null
+      trackingId: null,
+      isConnected: true
     };
 
     this.goToSettings = this.goToSettings.bind(this);
   }
   
+   handleConnectivityChange = (isConnected) => {
+     console.log("handleConnectivityChange", isConnected);
+    this.setState({ isConnected });
+  };
+
   async requestCameraPermission() {
     try {
       const granted = await PermissionsAndroid.request(
@@ -76,17 +83,17 @@ class MainScene extends PureComponent {
     }
   }
 
-  getCurrentLocation() {
+  getCurrentLocation = () => {
+
     if(Platform.OS  === "ios"){
       this.callGetCurrentLocation();
-      
+      console.log('aaadios');
     }else {
       this.requestCameraPermission();
     }
-    
   }
 
-  callGetCurrentLocation() {
+  callGetCurrentLocation = () => {
     this.watchId = navigator.geolocation.watchPosition(
       (position) => {
         let region = {
@@ -95,7 +102,6 @@ class MainScene extends PureComponent {
           latitudeDelta: latitudeDelta,
           longitudeDelta: longitudeDelta,
         }
-        
         this.setState({
           region,
           error: null,
@@ -107,6 +113,8 @@ class MainScene extends PureComponent {
   }
 
   componentDidMount() {
+    NetInfo.isConnected.addEventListener('connectionChange', this.handleConnectivityChange);
+
     console.log('map did mount');
     if(this.trackingId === null){
       this.setState({ trackingId: guid()});
@@ -257,6 +265,7 @@ class MainScene extends PureComponent {
     BackgroundGeolocation.events.forEach(event =>
       BackgroundGeolocation.removeAllListeners(event)
     );
+    NetInfo.isConnected.removeEventListener('connectionChange', this.handleConnectivityChange);
     navigator.geolocation.clearWatch(this.watchId);
   }
 
@@ -296,7 +305,6 @@ class MainScene extends PureComponent {
       } else if (authorization == BackgroundGeolocation.AUTHORIZED) {
         // calling start will also ask user for permission if needed
         // permission error will be handled in permisision_denied event
-        this.getCurrentLocation();
         BackgroundGeolocation.start();
       } else {
         Alert.alert(
@@ -311,6 +319,13 @@ class MainScene extends PureComponent {
         );
       }
     });
+  }
+
+  renderOfflineNotice() {
+    if (!this.state.isConnected) {
+      return <OfflineNotice style={{position: 'absolute'}}/>;
+    }
+    return null;
   }
 
   render() {
@@ -339,6 +354,7 @@ class MainScene extends PureComponent {
               );
             })}
           </MapView>
+          {this.renderOfflineNotice()}
           {/* <Button onPress={this.toggleTracking} style={{position: 'absolute', marginTop: SCREEN_HEIGHT - 100, marginLeft: SCREEN_WIDTH - 50, width:50, height: 50 }}>
             <Icon name="menu" style={[styles.icon, ,{margin:0}]} />
           </Button> */}
